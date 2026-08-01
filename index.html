@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI・IT 情報キャッチアップ</title>
+<style>
+  :root{
+    --bg:#f6f5fb; --panel:#ffffff; --ink:#1c2430; --sub:#5b6675; --line:#e6e3f0;
+    --accent:#7c3aed; --accent-weak:#f0eafe;
+    --ok:#0e9f6e; --ok-bg:#e6f6ef; --warn-ink:#b45309; --warn-bg:#fff4e3; --warn:#d9770660;
+    --danger:#dc2626; --danger-bg:#fdecec; --muted:#6b7280; --muted-bg:#eef1f5;
+    --chip:#f0eef7; --shadow:0 1px 3px rgba(20,30,50,.06),0 1px 2px rgba(20,30,50,.04);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1017; --panel:#181826; --ink:#e7ecf3; --sub:#9aa6b6; --line:#2a2740;
+      --accent:#a78bfa; --accent-weak:#211a3a;
+      --ok:#34d399; --ok-bg:#0f2b22; --warn-ink:#f5b041; --warn-bg:#2b2312;
+      --danger:#f87171; --danger-bg:#331a1a; --muted:#9aa6b6; --muted-bg:#1e2732;
+      --chip:#221f33; --shadow:0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:20px 16px 80px}
+  header.top{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 16px; margin-bottom:6px}
+  header.top h1{font-size:1.35rem; margin:0; letter-spacing:.02em}
+  .meta{color:var(--sub); font-size:.82rem}
+  .meta b{color:var(--ink)}
+  .note{
+    background:var(--warn-bg); color:var(--warn-ink); border:1px solid var(--warn);
+    border-radius:10px; padding:8px 12px; font-size:.82rem; margin:12px 0 18px;
+  }
+  .tabs{display:flex; gap:6px; margin:16px 0 14px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .tab{
+    appearance:none; border:0; background:none; color:var(--sub); cursor:pointer;
+    padding:10px 14px; font-size:.98rem; font-weight:600; border-bottom:2px solid transparent;
+  }
+  .tab.active{color:var(--accent); border-bottom-color:var(--accent)}
+  .tab .cnt{font-size:.75rem; color:var(--muted); font-weight:600; margin-left:4px}
+  .controls{display:flex; flex-wrap:wrap; gap:8px 10px; align-items:center; margin-bottom:8px}
+  .search{
+    flex:1 1 220px; min-width:180px; padding:9px 12px; border:1px solid var(--line);
+    border-radius:9px; background:var(--panel); color:var(--ink); font-size:.9rem;
+  }
+  select{
+    padding:9px 10px; border:1px solid var(--line); border-radius:9px;
+    background:var(--panel); color:var(--ink); font-size:.86rem;
+  }
+  .filters{display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 14px}
+  .fbtn{
+    appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--panel);
+    color:var(--sub); border-radius:999px; padding:5px 12px; font-size:.82rem; font-weight:600;
+  }
+  .fbtn.on{background:var(--accent-weak); color:var(--accent); border-color:transparent}
+  .lead{font-size:.95rem; color:var(--sub); margin:4px 0 12px}
+  .grouplabel{margin:18px 0 8px; font-size:.95rem; font-weight:800; color:var(--ink); display:flex; align-items:center; gap:8px}
+  .grouplabel::before{content:""; width:4px; height:16px; background:var(--accent); border-radius:2px; display:inline-block}
+  .grouplabel .sub{font-size:.78rem; font-weight:600; color:var(--sub)}
+  .grid{display:grid; grid-template-columns:1fr; gap:12px}
+  @media(min-width:720px){ .grid{grid-template-columns:1fr 1fr} }
+  .card{
+    background:var(--panel); border:1px solid var(--line); border-radius:14px;
+    padding:16px 16px 14px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:8px;
+  }
+  .card h3{margin:0; font-size:1.02rem; line-height:1.4}
+  .card h3 .en{font-size:.8rem; color:var(--sub); font-weight:600; margin-left:6px}
+  .row{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+  .badge{font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap}
+  .b-type{background:var(--accent-weak); color:var(--accent)}
+  .b-free{background:var(--ok-bg); color:var(--ok)}
+  .b-paid{background:var(--muted-bg); color:var(--muted)}
+  .b-part{background:var(--warn-bg); color:var(--warn-ink)}
+  .b-osusume{background:var(--accent); color:#fff}
+  .b-new{background:var(--danger); color:#fff}
+  .b-lvl-初級{background:var(--ok-bg); color:var(--ok)}
+  .b-lvl-中級{background:var(--warn-bg); color:var(--warn-ink)}
+  .b-lvl-上級{background:var(--danger-bg); color:var(--danger)}
+  .b-imp-大{background:var(--danger-bg); color:var(--danger)}
+  .b-imp-中{background:var(--warn-bg); color:var(--warn-ink)}
+  .b-imp-小{background:var(--muted-bg); color:var(--muted)}
+  .tag{font-size:.72rem; background:var(--chip); color:var(--sub); padding:3px 9px; border-radius:6px}
+  .org{color:var(--sub); font-size:.82rem}
+  .desc{font-size:.9rem}
+  .hitokoto{font-size:.95rem; font-weight:700; color:var(--accent)}
+  .tatoe{font-size:.85rem; color:var(--sub); background:var(--accent-weak); border-radius:8px; padding:7px 10px}
+  .tatoe::before{content:"たとえると "; font-weight:700; color:var(--accent)}
+  .why{font-size:.85rem; background:var(--accent-weak); border-radius:8px; padding:7px 10px}
+  .why::before{content:"なぜ大事？ "; font-weight:700; color:var(--accent)}
+  ul.req{margin:2px 0 0; padding-left:1.1em; font-size:.85rem}
+  ul.req li{margin:1px 0}
+  .src{font-size:.8rem; display:flex; flex-wrap:wrap; gap:8px; margin-top:2px}
+  .src a{color:var(--accent); text-decoration:none}
+  .src a:hover{text-decoration:underline}
+  .foot{color:var(--muted); font-size:.74rem; margin-top:2px}
+  .empty{color:var(--sub); text-align:center; padding:40px 0}
+  .hidden{display:none}
+  /* ダイジェスト */
+  .hero{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:6px}
+  .hero p{margin:.3em 0; font-size:.9rem}
+  .hero .big{font-size:1.02rem; font-weight:800; margin-bottom:4px}
+  .hero .pct{color:var(--accent); font-weight:800}
+  .summary{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 14px; box-shadow:var(--shadow); font-size:.82rem; color:var(--sub); cursor:pointer; user-select:none; transition:.12s}
+  .stat:hover{border-color:var(--accent)}
+  .stat b{display:block; font-size:1.25rem; color:var(--ink); line-height:1.2}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>🤖 AI・IT 情報キャッチアップ</h1>
+    <span class="meta">最終更新: <b id="lastUpdate">—</b> ／ 次回更新予定: <b id="nextUpdate">—</b></span>
+  </header>
+  <div class="note" id="note"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="home"   onclick="switchTab('home')">🏠 今週のダイジェスト</button>
+    <button class="tab" data-tab="models" onclick="switchTab('models')">🚀 最新モデル・ツール <span class="cnt" id="cntM"></span></button>
+    <button class="tab" data-tab="news"   onclick="switchTab('news')">📰 トレンド・ニュース <span class="cnt" id="cntN"></span></button>
+    <button class="tab" data-tab="terms"  onclick="switchTab('terms')">📖 用語・基礎知識 <span class="cnt" id="cntT"></span></button>
+    <button class="tab" data-tab="tips"   onclick="switchTab('tips')">💡 使ってみる <span class="cnt" id="cntP"></span></button>
+    <button class="tab" data-tab="new"    onclick="switchTab('new')">🆕 新着 <span class="cnt" id="cntNew"></span></button>
+  </div>
+
+  <!-- ============ 今週のダイジェスト ============ -->
+  <section id="tab-home">
+    <div class="hero">
+      <p class="big">70%の「情報収集」を、この画面に肩代わりさせる。</p>
+      <p>AIエンジニアに必要なのは<span class="pct">30%の好奇心</span>と<span class="pct">70%の情報収集</span>——。ここは、その“探して集めて要約する”手間を毎週自動でやっておく場所です。まずはざっと眺めて、気になったものだけ深掘りすればOK。</p>
+      <p class="foot">毎週月曜の朝に自動で最新化されます。用語が分からなくなったら「📖 用語・基礎知識」へ。</p>
+    </div>
+    <div class="summary" id="homeStats"></div>
+    <div id="homeBody"></div>
+  </section>
+
+  <!-- ============ 最新モデル・ツール ============ -->
+  <section id="tab-models" class="hidden">
+    <p class="lead">いま話題の AIモデル・ツール・サービスの一覧です。「無料」「初心者おすすめ」から気軽に試せます。</p>
+    <div class="controls">
+      <input class="search" id="searchM" type="search" placeholder="キーワード検索（名称・できること）" oninput="renderM()">
+      <select id="typeM" onchange="renderM()"><option value="">種別すべて</option></select>
+    </div>
+    <div class="filters" id="filtersM"></div>
+    <div class="grid" id="listM"></div>
+    <div class="empty hidden" id="emptyM">条件に合うものがありません。フィルタを調整してください。</div>
+  </section>
+
+  <!-- ============ トレンド・ニュース ============ -->
+  <section id="tab-news" class="hidden">
+    <p class="lead">AI・ITの最近の大きな動きを、専門用語なしでまとめています。</p>
+    <div class="controls">
+      <input class="search" id="searchN" type="search" placeholder="キーワード検索（見出し・内容）" oninput="renderN()">
+      <select id="catN" onchange="renderN()"><option value="">カテゴリすべて</option></select>
+      <select id="impN" onchange="renderN()">
+        <option value="">重要度すべて</option><option value="大">重要度：大</option>
+        <option value="中">重要度：中</option><option value="小">重要度：小</option>
+      </select>
+    </div>
+    <div class="grid" id="listN"></div>
+    <div class="empty hidden" id="emptyN">条件に合うニュースがありません。</div>
+  </section>
+
+  <!-- ============ 用語・基礎知識 ============ -->
+  <section id="tab-terms" class="hidden">
+    <p class="lead">AI・ITの言葉を、中学生にも分かる言葉でやさしく解説。ここを増やしていくのがこのツールの目玉です。</p>
+    <div class="controls">
+      <input class="search" id="searchT" type="search" placeholder="用語を検索（例: トークン、クラウド）" oninput="renderT()">
+      <select id="fieldT" onchange="renderT()"><option value="">分野すべて</option></select>
+    </div>
+    <div class="filters" id="filtersT"></div>
+    <div class="grid" id="listT"></div>
+    <div class="empty hidden" id="emptyT">条件に合う用語がありません。</div>
+  </section>
+
+  <!-- ============ 使ってみる ============ -->
+  <section id="tab-tips" class="hidden">
+    <p class="lead">今日、手を動かして試せる小ネタと、実務でのAI活用のヒントです。</p>
+    <div class="controls">
+      <input class="search" id="searchP" type="search" placeholder="キーワード検索" oninput="renderP()">
+    </div>
+    <div class="filters" id="filtersP"></div>
+    <div class="grid" id="listP"></div>
+    <div class="empty hidden" id="emptyP">条件に合うヒントがありません。</div>
+  </section>
+
+  <!-- ============ 新着 ============ -->
+  <section id="tab-new" class="hidden">
+    <p class="lead" id="newLead"></p>
+    <div id="newBody"></div>
+  </section>
+
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ---------- データ読み込み ---------- */
+const モデル = Array.isArray(window.モデルツールデータ) ? window.モデルツールデータ : [];
+const ニュース = Array.isArray(window.ニュースデータ) ? window.ニュースデータ : [];
+const 用語 = Array.isArray(window.用語データ) ? window.用語データ : [];
+const ヒント = Array.isArray(window.ヒントデータ) ? window.ヒントデータ : [];
+const メタ = window.メタ || {};
+
+/* ---------- 共通ヘルパー ---------- */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+function isNew(item){
+  const added = item.追加日, prev = メタ.前回更新;
+  if(!added || !prev) return false;
+  return String(added) > String(prev);
+}
+function newBadge(it){ return isNew(it) ? '<span class="badge b-new">🆕 新着</span>' : ''; }
+function srcHtml(list){ return (list||[]).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">🔗 ${esc(s.タイトル||"公式ページ")}</a>`).join(""); }
+function tagsHtml(list){ return (list||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join(""); }
+function bullets(list){ return (list||[]).map(x=>`<li>${esc(String(x).replace(/^[・\-]\s*/,""))}</li>`).join(""); }
+function uniq(arr){ return [...new Set(arr.filter(Boolean))]; }
+/* 料金ラベル → バッジ種別 */
+function feeBadge(f){
+  const s=String(f||"");
+  if(/^無料/.test(s)) return `<span class="badge b-free">無料</span>`;
+  if(/一部無料|無料枠/.test(s)) return `<span class="badge b-part">一部無料</span>`;
+  if(/有料|月額/.test(s)) return `<span class="badge b-paid">有料</span>`;
+  return `<span class="badge b-paid">${esc(s||"要確認")}</span>`;
+}
+
+/* ---------- タブ切替 ---------- */
+const TABS=["home","models","news","terms","tips","new"];
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+  TABS.forEach(n=>document.getElementById("tab-"+n).classList.toggle("hidden", n!==name));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function goTab(name){ switchTab(name); }
+
+/* ---------- カード：モデル・ツール ---------- */
+function cardM(it){
+  const el=document.createElement("div"); el.className="card";
+  const osusume = it.初心者おすすめ ? `<span class="badge b-osusume">初心者おすすめ</span>` : "";
+  el.innerHTML=`
+    <div class="row">${newBadge(it)}<span class="badge b-type">${esc(it.種別||"ツール")}</span>${feeBadge(it.料金)}${osusume}</div>
+    <h3>${esc(it.名称)}</h3>
+    <div class="org">${esc(it.提供元||"")}</div>
+    <div class="desc">${esc(it.概要||"")}</div>
+    ${it.できること&&it.できること.length?`<div><div class="org">できること</div><ul class="req">${bullets(it.できること)}</ul></div>`:""}
+    <div class="row">${tagsHtml(it.分野)}</div>
+    ${it.料金?`<div class="foot">料金: ${esc(it.料金)}</div>`:""}
+    ${it.備考?`<div class="foot">📝 ${esc(it.備考)}</div>`:""}
+    <div class="src">${srcHtml(it.出典)}</div>
+    <div class="foot">取得日: ${esc(it.取得日||"—")}</div>`;
+  return el;
+}
+/* ---------- カード：ニュース ---------- */
+function cardN(it){
+  const imp=it.重要度||""; const impCls=({"大":"b-imp-大","中":"b-imp-中","小":"b-imp-小"})[imp]||"b-imp-小";
+  const el=document.createElement("div"); el.className="card";
+  el.innerHTML=`
+    <div class="row">${newBadge(it)}<span class="badge b-type">${esc(it.カテゴリ||"")}</span>${imp?`<span class="badge ${impCls}">重要度 ${esc(imp)}</span>`:""}</div>
+    <h3>${esc(it.見出し)}</h3>
+    <div class="desc">${esc(it.概要||"")}</div>
+    ${it.なぜ大事?`<div class="why">${esc(it.なぜ大事)}</div>`:""}
+    <div class="src">${srcHtml(it.出典)}</div>
+    <div class="foot">取得日: ${esc(it.取得日||"—")}</div>`;
+  return el;
+}
+/* ---------- カード：用語 ---------- */
+function cardT(it){
+  const en = [it.英語,it.読み].filter(Boolean).join(" / ");
+  const el=document.createElement("div"); el.className="card";
+  el.innerHTML=`
+    <div class="row">${newBadge(it)}${it.レベル?`<span class="badge b-lvl-${esc(it.レベル)}">${esc(it.レベル)}</span>`:""}${tagsHtml(it.分野)}</div>
+    <h3>${esc(it.用語)}${en?`<span class="en">${esc(en)}</span>`:""}</h3>
+    ${it.一言?`<div class="hitokoto">${esc(it.一言)}</div>`:""}
+    <div class="desc">${esc(it.説明||"")}</div>
+    ${it.たとえ?`<div class="tatoe">${esc(it.たとえ)}</div>`:""}
+    ${it.関連語&&it.関連語.length?`<div class="row"><span class="org">関連:</span>${tagsHtml(it.関連語)}</div>`:""}
+    <div class="src">${srcHtml(it.出典)}</div>`;
+  return el;
+}
+/* ---------- カード：ヒント ---------- */
+function cardP(it){
+  const el=document.createElement("div"); el.className="card";
+  el.innerHTML=`
+    <div class="row">${newBadge(it)}<span class="badge b-type">${esc(it.種別||"使ってみる")}</span>${it.対象?`<span class="tag">${esc(it.対象)}</span>`:""}</div>
+    <h3>${esc(it.タイトル)}</h3>
+    <div class="desc">${esc(it.概要||"")}</div>
+    ${it.ポイント&&it.ポイント.length?`<div><div class="org">ポイント</div><ul class="req">${bullets(it.ポイント)}</ul></div>`:""}
+    ${it.備考?`<div class="foot">📝 ${esc(it.備考)}</div>`:""}
+    <div class="src">${srcHtml(it.出典)}</div>
+    <div class="foot">取得日: ${esc(it.取得日||"—")}</div>`;
+  return el;
+}
+
+/* ================= 今週のダイジェスト ================= */
+function renderHome(){
+  const stats=document.getElementById("homeStats");
+  stats.innerHTML =
+    `<div class="stat" onclick="goTab('models')"><b>${モデル.length}</b>モデル・ツール</div>`+
+    `<div class="stat" onclick="goTab('news')"><b>${ニュース.length}</b>ニュース</div>`+
+    `<div class="stat" onclick="goTab('terms')"><b>${用語.length}</b>用語</div>`+
+    `<div class="stat" onclick="goTab('tips')"><b>${ヒント.length}</b>使ってみる</div>`;
+  const box=document.getElementById("homeBody"); box.innerHTML="";
+  const section=(title,sub,items,cardFn,tab)=>{
+    if(!items.length) return;
+    const h=document.createElement("div"); h.className="grouplabel";
+    h.innerHTML=`${esc(title)} <span class="sub">（<a href="javascript:void(0)" onclick="goTab('${tab}')">すべて見る →</a>）</span>`;
+    box.appendChild(h);
+    const g=document.createElement("div"); g.className="grid";
+    items.forEach(it=>g.appendChild(cardFn(it))); box.appendChild(g);
+  };
+  // 新着があれば優先、なければ代表を数件
+  const pick=(arr,fn)=>{ const nw=arr.filter(isNew); return (nw.length?nw:arr.slice()).slice(0,4); };
+  const bigNews = (()=>{ const nw=ニュース.filter(isNew); if(nw.length) return nw.slice(0,4);
+    return ニュース.slice().sort((a,b)=>({"大":0,"中":1,"小":2}[a.重要度]??3)-({"大":0,"中":1,"小":2}[b.重要度]??3)).slice(0,4); })();
+  const oshiModels = (()=>{ const nw=モデル.filter(isNew); if(nw.length) return nw.slice(0,4);
+    return モデル.filter(m=>m.初心者おすすめ).slice(0,4).concat(モデル).slice(0,4); })();
+  const someTerms = pick(用語, cardT).slice(0,3);
+  section("📰 注目のニュース","",bigNews,cardN,"news");
+  section("🚀 チェックしたいモデル・ツール","",oshiModels,cardM,"models");
+  section("📖 今週のことば","",someTerms,cardT,"terms");
+  if(!bigNews.length && !oshiModels.length && !someTerms.length){
+    const e=document.createElement("div"); e.className="empty";
+    e.textContent="まだデータがありません。自動更新が走ると、ここに要点がまとまります。";
+    box.appendChild(e);
+  }
+}
+
+/* ================= モデル・ツール ================= */
+const stateM={type:new Set()};
+function buildM(){
+  uniq(モデル.map(m=>m.種別)).forEach(t=>document.getElementById("typeM").add(new Option(t,t)));
+  const f=document.getElementById("filtersM");
+  const b=document.createElement("button"); b.className="fbtn"; b.textContent="初心者おすすめだけ";
+  b.onclick=()=>{ b.classList.toggle("on"); stateM.osusume=b.classList.contains("on"); renderM(); };
+  f.appendChild(b);
+}
+function renderM(){
+  const q=(document.getElementById("searchM").value||"").trim().toLowerCase();
+  const type=document.getElementById("typeM").value;
+  let items=モデル.filter(it=>{
+    if(type && it.種別!==type) return false;
+    if(stateM.osusume && !it.初心者おすすめ) return false;
+    if(q){ const hay=[it.名称,it.提供元,it.概要,(it.できること||[]).join(" "),(it.分野||[]).join(" ")].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  items.sort((a,b)=> (isNew(b)-isNew(a)) || (Number(!!b.初心者おすすめ)-Number(!!a.初心者おすすめ)) );
+  const list=document.getElementById("listM"); list.innerHTML="";
+  document.getElementById("emptyM").classList.toggle("hidden", items.length>0);
+  items.forEach(it=>list.appendChild(cardM(it)));
+}
+
+/* ================= ニュース ================= */
+function buildN(){
+  uniq(ニュース.map(n=>n.カテゴリ)).forEach(c=>document.getElementById("catN").add(new Option(c,c)));
+}
+function renderN(){
+  const q=(document.getElementById("searchN").value||"").trim().toLowerCase();
+  const cat=document.getElementById("catN").value;
+  const imp=document.getElementById("impN").value;
+  let items=ニュース.filter(it=>{
+    if(cat && it.カテゴリ!==cat) return false;
+    if(imp && it.重要度!==imp) return false;
+    if(q){ const hay=[it.見出し,it.概要,it.なぜ大事].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const impOrder={"大":0,"中":1,"小":2};
+  items.sort((a,b)=> (isNew(b)-isNew(a)) || ((impOrder[a.重要度]??3)-(impOrder[b.重要度]??3)) );
+  const list=document.getElementById("listN"); list.innerHTML="";
+  document.getElementById("emptyN").classList.toggle("hidden", items.length>0);
+  items.forEach(it=>list.appendChild(cardN(it)));
+}
+
+/* ================= 用語 ================= */
+const stateT={level:new Set()};
+function buildT(){
+  const fields=uniq(用語.flatMap(t=>t.分野||[]));
+  fields.forEach(f=>document.getElementById("fieldT").add(new Option(f,f)));
+  const box=document.getElementById("filtersT");
+  ["初級","中級","上級"].forEach(lv=>{
+    if(!用語.some(t=>t.レベル===lv)) return;
+    const b=document.createElement("button"); b.className="fbtn"; b.textContent=lv;
+    b.onclick=()=>{ stateT.level.has(lv)?stateT.level.delete(lv):stateT.level.add(lv); b.classList.toggle("on"); renderT(); };
+    box.appendChild(b);
+  });
+}
+function renderT(){
+  const q=(document.getElementById("searchT").value||"").trim().toLowerCase();
+  const field=document.getElementById("fieldT").value;
+  let items=用語.filter(it=>{
+    if(field && !(it.分野||[]).includes(field)) return false;
+    if(stateT.level.size && !stateT.level.has(it.レベル)) return false;
+    if(q){ const hay=[it.用語,it.英語,it.読み,it.一言,it.説明,it.たとえ,(it.関連語||[]).join(" ")].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const lvOrder={"初級":0,"中級":1,"上級":2};
+  items.sort((a,b)=> (isNew(b)-isNew(a)) || ((lvOrder[a.レベル]??1)-(lvOrder[b.レベル]??1)) );
+  const list=document.getElementById("listT"); list.innerHTML="";
+  document.getElementById("emptyT").classList.toggle("hidden", items.length>0);
+  items.forEach(it=>list.appendChild(cardT(it)));
+}
+
+/* ================= ヒント ================= */
+const stateP={type:new Set()};
+function buildP(){
+  const box=document.getElementById("filtersP");
+  uniq(ヒント.map(h=>h.種別)).forEach(t=>{
+    const b=document.createElement("button"); b.className="fbtn"; b.textContent=t;
+    b.onclick=()=>{ stateP.type.has(t)?stateP.type.delete(t):stateP.type.add(t); b.classList.toggle("on"); renderP(); };
+    box.appendChild(b);
+  });
+}
+function renderP(){
+  const q=(document.getElementById("searchP").value||"").trim().toLowerCase();
+  let items=ヒント.filter(it=>{
+    if(stateP.type.size && !stateP.type.has(it.種別)) return false;
+    if(q){ const hay=[it.タイトル,it.概要,(it.ポイント||[]).join(" "),it.対象].join(" ").toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  items.sort((a,b)=> isNew(b)-isNew(a) );
+  const list=document.getElementById("listP"); list.innerHTML="";
+  document.getElementById("emptyP").classList.toggle("hidden", items.length>0);
+  items.forEach(it=>list.appendChild(cardP(it)));
+}
+
+/* ================= 新着 ================= */
+function renderNew(){
+  const nM=モデル.filter(isNew), nN=ニュース.filter(isNew), nT=用語.filter(isNew), nP=ヒント.filter(isNew);
+  const total=nM.length+nN.length+nT.length+nP.length;
+  document.getElementById("cntNew").textContent="("+total+")";
+  const lead=document.getElementById("newLead"), box=document.getElementById("newBody"); box.innerHTML="";
+  if(!total){
+    lead.textContent=`最終更新（${メタ.最終更新||"—"}）で新たに追加された項目はありません。`;
+    const e=document.createElement("div"); e.className="empty";
+    e.innerHTML="初回データのため、まだ「新着」はありません。<br>次回以降の自動更新で新しく追加された項目が、ここにまとまって表示されます。";
+    box.appendChild(e); return;
+  }
+  lead.innerHTML=`<b>${esc(メタ.最終更新)}</b> の更新で新たに追加 — モデル・ツール ${nM.length}／ニュース ${nN.length}／用語 ${nT.length}／使ってみる ${nP.length}`;
+  const grp=(title,items,fn)=>{ if(!items.length) return;
+    const h=document.createElement("div"); h.className="grouplabel"; h.textContent=`${title}（${items.length}件）`; box.appendChild(h);
+    const g=document.createElement("div"); g.className="grid"; items.forEach(it=>g.appendChild(fn(it))); box.appendChild(g);
+  };
+  grp("🚀 新しいモデル・ツール",nM,cardM);
+  grp("📰 新しいニュース",nN,cardN);
+  grp("📖 新しい用語",nT,cardT);
+  grp("💡 新しい使ってみる",nP,cardP);
+}
+
+/* ---------- 初期化 ---------- */
+document.getElementById("lastUpdate").textContent = メタ.最終更新 || "—";
+document.getElementById("nextUpdate").textContent = メタ.次回更新予定 || "—";
+document.getElementById("note").textContent = "⚠ " + (メタ.注記 || "この一覧はキャッチアップ用の早わかりです。正確な情報や最新の料金は、各カードの🔗出典（公式ページ）でご確認ください。");
+document.getElementById("cntM").textContent="("+モデル.length+")";
+document.getElementById("cntN").textContent="("+ニュース.length+")";
+document.getElementById("cntT").textContent="("+用語.length+")";
+document.getElementById("cntP").textContent="("+ヒント.length+")";
+buildM(); buildN(); buildT(); buildP();
+renderHome(); renderM(); renderN(); renderT(); renderP(); renderNew();
+</script>
+</body>
+</html>
